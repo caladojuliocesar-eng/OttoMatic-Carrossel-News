@@ -3,13 +3,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ShieldAlert, MessageCircle, Zap, Sparkles } from 'lucide-react';
 
-const MAX_CREDITS = 2;
+const MAX_CAROUSEL_CREDITS = 2;
+const MAX_IMAGE_CREDITS = 25;
 const LS_TOKEN_KEY = 'vip_token';
-const LS_CREDITS_KEY = 'vip_credits';
+const LS_CAROUSELS_KEY = 'vip_carousels_v2';
+const LS_IMAGES_KEY = 'vip_images_v2';
 
 export default function AccessGate({ children }) {
     const [accessState, setAccessState] = useState('loading'); // 'loading' | 'granted' | 'blocked' | 'expired'
-    const [credits, setCredits] = useState(0);
+    const [carouselCredits, setCarouselCredits] = useState(0);
+    const [imageCredits, setImageCredits] = useState(0);
 
     useEffect(() => {
         const init = async () => {
@@ -30,21 +33,26 @@ export default function AccessGate({ children }) {
                     if (data.valid) {
                         // Check if this token already has saved credits
                         const savedToken = localStorage.getItem(LS_TOKEN_KEY);
-                        const savedCredits = parseInt(localStorage.getItem(LS_CREDITS_KEY) || '0', 10);
+                        const savedCarousels = parseInt(localStorage.getItem(LS_CAROUSELS_KEY) || '0', 10);
+                        const savedImages = parseInt(localStorage.getItem(LS_IMAGES_KEY) || '0', 10);
 
-                        if (savedToken === tokenFromUrl && savedCredits > 0) {
+                        if (savedToken === tokenFromUrl && savedCarousels > 0) {
                             // Same token, resume credits
-                            setCredits(savedCredits);
+                            setCarouselCredits(savedCarousels);
+                            setImageCredits(savedImages);
                             setAccessState('granted');
-                        } else if (savedToken === tokenFromUrl && savedCredits <= 0) {
+                        } else if (savedToken === tokenFromUrl && savedCarousels <= 0) {
                             // Same token, already used all credits
-                            setCredits(0);
+                            setCarouselCredits(0);
+                            setImageCredits(savedImages);
                             setAccessState('expired');
                         } else {
                             // New token, fresh credits
                             localStorage.setItem(LS_TOKEN_KEY, tokenFromUrl);
-                            localStorage.setItem(LS_CREDITS_KEY, String(MAX_CREDITS));
-                            setCredits(MAX_CREDITS);
+                            localStorage.setItem(LS_CAROUSELS_KEY, String(MAX_CAROUSEL_CREDITS));
+                            localStorage.setItem(LS_IMAGES_KEY, String(MAX_IMAGE_CREDITS));
+                            setCarouselCredits(MAX_CAROUSEL_CREDITS);
+                            setImageCredits(MAX_IMAGE_CREDITS);
                             setAccessState('granted');
                         }
                     } else {
@@ -62,12 +70,15 @@ export default function AccessGate({ children }) {
             // 2. No token in URL — check localStorage for a previous session
             const savedToken = localStorage.getItem(LS_TOKEN_KEY);
             if (savedToken) {
-                const savedCredits = parseInt(localStorage.getItem(LS_CREDITS_KEY) || '0', 10);
-                if (savedCredits > 0) {
-                    setCredits(savedCredits);
+                const savedCarousels = parseInt(localStorage.getItem(LS_CAROUSELS_KEY) || '0', 10);
+                const savedImages = parseInt(localStorage.getItem(LS_IMAGES_KEY) || '0', 10);
+                if (savedCarousels > 0) {
+                    setCarouselCredits(savedCarousels);
+                    setImageCredits(savedImages);
                     setAccessState('granted');
                 } else {
-                    setCredits(0);
+                    setCarouselCredits(0);
+                    setImageCredits(savedImages);
                     setAccessState('expired');
                 }
                 return;
@@ -75,31 +86,46 @@ export default function AccessGate({ children }) {
 
             // 3. No token anywhere — this is the owner accessing normally
             setAccessState('granted');
-            setCredits(-1); // -1 = unlimited (owner mode)
+            setCarouselCredits(-1); // -1 = unlimited (owner mode)
+            setImageCredits(-1);
         };
 
         init();
     }, []);
 
-    const consumeCredit = useCallback(() => {
+    const consumeCarouselCredit = useCallback(() => {
         // Owner mode (no token = unlimited)
-        if (credits === -1) return true;
+        if (carouselCredits === -1) return true;
 
-        if (credits <= 0) {
+        if (carouselCredits <= 0) {
             setAccessState('expired');
             return false;
         }
 
-        const newCredits = credits - 1;
-        setCredits(newCredits);
-        localStorage.setItem(LS_CREDITS_KEY, String(newCredits));
+        const newCredits = carouselCredits - 1;
+        setCarouselCredits(newCredits);
+        localStorage.setItem(LS_CAROUSELS_KEY, String(newCredits));
 
-        if (newCredits <= 0) {
-            setAccessState('expired');
+        // We DO NOT set expired here immediately! We want them to see the final carousel.
+        // It will only set expired if they try to consume when it's already 0 (caught by the if above).
+        
+        return true;
+    }, [carouselCredits]);
+
+    const consumeImageCredit = useCallback(() => {
+        if (carouselCredits === -1 || imageCredits === -1) return true;
+
+        // Block generation if no image credits left, but do NOT expire the main UI
+        if (imageCredits <= 0) {
+            return false;
         }
 
+        const newCredits = imageCredits - 1;
+        setImageCredits(newCredits);
+        localStorage.setItem(LS_IMAGES_KEY, String(newCredits));
+
         return true;
-    }, [credits]);
+    }, [carouselCredits, imageCredits]);
 
     // Loading state
     if (accessState === 'loading') {
@@ -179,18 +205,24 @@ export default function AccessGate({ children }) {
     return (
         <div className="relative">
             {/* Credit badge for VIP users (not owner) */}
-            {credits !== -1 && (
+            {carouselCredits !== -1 && (
                 <div className="fixed top-4 right-4 z-50 bg-zinc-900/90 backdrop-blur border border-zinc-700 rounded-full px-4 py-2 flex items-center gap-2 shadow-lg">
                     <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                     <span className="text-xs font-bold text-zinc-200">
-                        {credits} {credits === 1 ? 'crédito' : 'créditos'} restante{credits === 1 ? '' : 's'}
+                        ✨ {carouselCredits} Carross{carouselCredits === 1 ? 'el' : 'éis'} Restante{carouselCredits === 1 ? '' : 's'}
                     </span>
                 </div>
             )}
             {/* Render CarouselEngine with consumeCredit injected */}
             {React.Children.map(children, child =>
                 React.isValidElement(child)
-                    ? React.cloneElement(child, { onBeforeGenerate: consumeCredit })
+                    ? React.cloneElement(child, { 
+                        onBeforeCarouselGenerate: consumeCarouselCredit,
+                        onBeforeImageGenerate: consumeImageCredit,
+                        carouselCredits,
+                        imageCredits,
+                        isOwner: carouselCredits === -1
+                    })
                     : child
             )}
         </div>

@@ -22,7 +22,13 @@ import {
     Link as LinkIcon
 } from 'lucide-react';
 
-export default function CarouselEngine({ onBeforeGenerate }) {
+export default function CarouselEngine({ 
+    onBeforeCarouselGenerate,
+    onBeforeImageGenerate,
+    carouselCredits,
+    imageCredits,
+    isOwner 
+}) {
     const [theme, setTheme] = useState('');
     const [slides, setSlides] = useState([]);
     const [captions, setCaptions] = useState({ linkedin: '', instagram: '' });
@@ -52,6 +58,7 @@ export default function CarouselEngine({ onBeforeGenerate }) {
 
     // Deteccao dinamica de URL
     const isUrlDetected = theme.trim().toLowerCase().startsWith('http');
+    const isCarouselLimitReached = !isOwner && carouselCredits <= 0;
 
     const exportAllToPNG = async () => {
         setIsExporting(true);
@@ -186,7 +193,11 @@ export default function CarouselEngine({ onBeforeGenerate }) {
     };
 
     const generateImageWithAI = async (index, prompt) => {
-        if (onBeforeGenerate && !onBeforeGenerate()) return;
+        if (!isOwner && imageCredits <= 0) {
+            setError('Poxa! Seu saldo extra de Inteligência Artificial para imagens na conta de testes acabou. Mas você ainda pode fazer upload das suas próprias fotos ou baixar o projeto assim mesmo!');
+            return;
+        }
+        if (onBeforeImageGenerate && !onBeforeImageGenerate()) return;
         setLoadingImages(prev => ({ ...prev, [index]: true }));
         setError('');
         try {
@@ -223,7 +234,7 @@ export default function CarouselEngine({ onBeforeGenerate }) {
     };
 
     const generateCarousel = async () => {
-        if (onBeforeGenerate && !onBeforeGenerate()) return;
+        if (onBeforeCarouselGenerate && !onBeforeCarouselGenerate()) return;
         if (!theme.trim()) {
             setError('Joga um tema ou link de notícia aí, né? Não leio mentes.');
             return;
@@ -236,10 +247,11 @@ export default function CarouselEngine({ onBeforeGenerate }) {
         setImagePositions({}); 
 
         try {
+            const requestSlideCount = !isOwner ? 4 : slideCount;
             const response = await fetch('/api/generate-carousel', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ theme, slideCount })
+                body: JSON.stringify({ theme, slideCount: requestSlideCount })
             });
 
             if (!response.ok) {
@@ -575,22 +587,22 @@ export default function CarouselEngine({ onBeforeGenerate }) {
                             <div className="mt-6">
                                 <div className="flex justify-between items-center mb-2">
                                     <label className="text-sm font-medium text-zinc-300">Quantidade de Slides</label>
-                                    <span className={`font-bold px-2 py-0.5 rounded text-sm ${isUrlDetected ? 'bg-indigo-500/20 text-indigo-400' : 'bg-blue-500/10 text-blue-500'}`}>
-                                        {isUrlDetected ? 'Automático pela IA' : slideCount}
+                                    <span className={`font-bold px-2 py-0.5 rounded text-sm ${(!isOwner || isUrlDetected) ? 'bg-indigo-500/20 text-indigo-400' : 'bg-blue-500/10 text-blue-500'}`}>
+                                        {!isOwner ? '4 (Versão Teste)' : isUrlDetected ? 'Automático pela IA' : slideCount}
                                     </span>
                                 </div>
                                 <input 
                                     type="range" 
                                     min="4" 
                                     max="10" 
-                                    value={slideCount}
+                                    value={!isOwner ? 4 : slideCount}
                                     onChange={(e) => setSlideCount(parseInt(e.target.value))}
-                                    disabled={isUrlDetected}
-                                    className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${isUrlDetected ? 'bg-indigo-900/50 accent-indigo-500 opacity-50' : 'bg-zinc-800 accent-blue-500'}`}
+                                    disabled={!isOwner || isUrlDetected}
+                                    className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${(!isOwner || isUrlDetected) ? 'bg-indigo-900/50 accent-indigo-500 opacity-50' : 'bg-zinc-800 accent-blue-500'}`}
                                 />
                                 <div className="flex justify-between text-xs text-zinc-500 mt-2">
                                     <span>4 (Curto)</span>
-                                    <span>{isUrlDetected ? 'O Slider se moverá sozinho após gerar' : '10 (Bíblia)'}</span>
+                                    <span>{(!isOwner || isUrlDetected) ? 'O Slider será bloqueado' : '10 (Bíblia)'}</span>
                                 </div>
                             </div>
                             
@@ -603,13 +615,18 @@ export default function CarouselEngine({ onBeforeGenerate }) {
 
                             <button
                                 onClick={generateCarousel}
-                                disabled={isGenerating}
+                                disabled={isGenerating || isCarouselLimitReached}
                                 className={`mt-6 w-full text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isUrlDetected ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-blue-600 hover:bg-blue-500'}`}
                             >
                                 {isGenerating ? (
                                     <>
                                         <Loader2 className="w-5 h-5 animate-spin" />
                                         {isUrlDetected ? 'Extraindo e Arquitetando...' : 'Arquitetando Roteiro...'}
+                                    </>
+                                ) : isCarouselLimitReached ? (
+                                    <>
+                                        <AlertCircle className="w-5 h-5" />
+                                        Limite de Carrosséis Atingido
                                     </>
                                 ) : (
                                     <>

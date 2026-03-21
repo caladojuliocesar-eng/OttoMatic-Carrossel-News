@@ -60,9 +60,13 @@ export async function POST(req) {
             systemPrompt += `
             *** ATENÇÃO: MODO NOTÍCIA DETECTADO ***
             O usuário enviou uma reportagem ou artigo (extraído via Crawler). 
-            1. IGNORe a quantidade de slides pedida. Baseado na profundidade do texto, DECIDA VOCÊ a quantidade ideal de slides (entre 4 e 10 slides) para resumir perfeitamente o artigo sem ser raso nem enrolar.
-            2. Extraia o nome do Veículo/Portal e o Autor (se houver) e preencha o campo "credito_extraido" no formato: "Fonte: [Nome do Veículo] | Por [Autor]". Se não tiver autor, apenas "Fonte: [Veículo]".
             `;
+            if (slideCount === 4) {
+                systemPrompt += `1. Você DEVE criar EXATAMENTE 4 slides para resumir o artigo de forma concisa e impactante. Nunca crie mais nem menos.\n`;
+            } else {
+                systemPrompt += `1. IGNORe a quantidade de slides pedida. Baseado na profundidade do texto, DECIDA VOCÊ a quantidade ideal de slides (entre 4 a 10) para resumir perfeitamente o artigo sem ser raso nem enrolar.\n`;
+            }
+            systemPrompt += `2. Extraia o nome do Veículo/Portal e o Autor (se houver) e preencha o campo "credito_extraido" no formato: "Fonte: [Nome do Veículo] | Por [Autor]". Se não tiver autor, apenas "Fonte: [Veículo]".\n`;
         } else {
             systemPrompt += `
             Você DEVE criar EXATAMENTE ${slideCount} slides, nem um a mais, nem um a menos.
