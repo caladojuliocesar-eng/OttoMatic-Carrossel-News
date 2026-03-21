@@ -22,7 +22,7 @@ import {
     Link as LinkIcon
 } from 'lucide-react';
 
-export default function CarouselEngine() {
+export default function CarouselEngine({ onBeforeGenerate }) {
     const [theme, setTheme] = useState('');
     const [slides, setSlides] = useState([]);
     const [captions, setCaptions] = useState({ linkedin: '', instagram: '' });
@@ -186,6 +186,7 @@ export default function CarouselEngine() {
     };
 
     const generateImageWithAI = async (index, prompt) => {
+        if (onBeforeGenerate && !onBeforeGenerate()) return;
         setLoadingImages(prev => ({ ...prev, [index]: true }));
         setError('');
         try {
@@ -222,6 +223,7 @@ export default function CarouselEngine() {
     };
 
     const generateCarousel = async () => {
+        if (onBeforeGenerate && !onBeforeGenerate()) return;
         if (!theme.trim()) {
             setError('Joga um tema ou link de notícia aí, né? Não leio mentes.');
             return;

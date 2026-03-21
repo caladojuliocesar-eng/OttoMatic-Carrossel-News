@@ -1,9 +1,12 @@
 import CarouselEngine from "@/components/CarouselEngine";
+import AccessGate from "@/components/AccessGate";
 
 export default function Home() {
   return (
     <main>
-      <CarouselEngine />
+      <AccessGate>
+        <CarouselEngine />
+      </AccessGate>
     </main>
   );
 }
