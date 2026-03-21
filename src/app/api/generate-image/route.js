@@ -17,10 +17,10 @@ export async function POST(req) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey.trim()}`;
 
         const payload = {
-            instances: { prompt: prompt + " -- fotografia editorial, premium, sem texto, estilo documental, foco em ambientes, objetos ou silhuetas abstratas, altamente proibido rostos fotorrealistas, 21:9" },
+            instances: { prompt: prompt + " -- fotografia editorial, premium, sem texto, estilo documental, foco em ambientes, objetos ou silhuetas abstratas, altamente proibido rostos fotorrealistas, 16:9" },
             parameters: {
                 sampleCount: 1,
-                aspectRatio: "21:9"
+                aspectRatio: "16:9"
             }
         };
 
