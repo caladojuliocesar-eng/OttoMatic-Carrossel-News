@@ -14,7 +14,7 @@ export async function POST(req) {
             return NextResponse.json({ error: 'GEMINI_API_KEY não configurada no servidor.' }, { status: 500 });
         }
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey.trim()}`;
 
         const payload = {
             instances: { prompt: prompt + " -- fotografia editorial, premium, sem texto, estilo documental, foco em ambientes, objetos ou silhuetas abstratas, altamente proibido rostos fotorrealistas, 21:9" },
