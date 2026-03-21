@@ -32,8 +32,8 @@ export async function POST(req) {
                 console.error("Erro ao acessar Jina:", e);
             }
         }
-
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
+        
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-002:generateContent?key=${apiKey}`;
 
         // Prompt condicional
         let systemPrompt = `Você é um diretor de arte, copywriter de elite e estrategista de social media. 
