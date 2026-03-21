@@ -33,7 +33,7 @@ export async function POST(req) {
             }
         }
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
 
         // Prompt condicional
         let systemPrompt = `Você é um diretor de arte, copywriter de elite e estrategista de social media. 
