@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Loader2,
     Send,
@@ -40,6 +40,9 @@ export default function CarouselEngine({
     const [loadingImages, setLoadingImages] = useState({});
     const [slideCount, setSlideCount] = useState(6);
     
+    // Referencia da rolagem horizontal
+    const scrollContainerRef = useRef(null);
+    
     // Controle Y das imagens
     const [imagePositions, setImagePositions] = useState({});
 
@@ -59,6 +62,29 @@ export default function CarouselEngine({
     // Deteccao dinamica de URL
     const isUrlDetected = theme.trim().toLowerCase().startsWith('http');
     const isCarouselLimitReached = !isOwner && carouselCredits <= 0;
+
+    // Efeito para converter SCROLL vertical do mouse em SCROLL horizontal e permitir setas
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const handleWheel = (e) => {
+            // Se o usuário já está fazendo scroll horizontal (touchpad/shift), não interfere
+            if (e.deltaX !== 0) return;
+            
+            e.preventDefault();
+            container.scrollBy({
+                left: e.deltaY < 0 ? -100 : 100, // Move 100px por "clique" do scroll
+                behavior: 'auto'
+            });
+        };
+
+        container.addEventListener('wheel', handleWheel, { passive: false });
+        
+        return () => {
+            container.removeEventListener('wheel', handleWheel);
+        };
+    }, [viewMode, slides.length]);
 
     const exportAllToPNG = async () => {
         setIsExporting(true);
@@ -768,7 +794,12 @@ export default function CarouselEngine({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="flex gap-6 overflow-x-auto pb-8 pt-2 snap-x snap-mandatory" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                                    <div 
+                                        ref={scrollContainerRef}
+                                        tabIndex={0}
+                                        className="flex gap-6 overflow-x-auto pb-8 pt-2 snap-x snap-mandatory focus:outline-none" 
+                                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                                    >
                                         {slides.map((slide, index) => (
                                             <div key={`visual-${index}`} className="flex flex-col gap-4 w-[380px] shrink-0 snap-center">
                                                 
