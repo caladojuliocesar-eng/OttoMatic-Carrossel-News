@@ -31,29 +31,38 @@ export default function AccessGate({ children }) {
                     const data = await res.json();
 
                     if (data.valid) {
-                        // Check if this token already has saved credits
-                        const savedToken = localStorage.getItem(LS_TOKEN_KEY);
-                        const savedCarousels = parseInt(localStorage.getItem(LS_CAROUSELS_KEY) || '0', 10);
-                        const savedImages = parseInt(localStorage.getItem(LS_IMAGES_KEY) || '0', 10);
-
-                        if (savedToken === tokenFromUrl && savedCarousels > 0) {
-                            // Same token, resume credits
-                            setCarouselCredits(savedCarousels);
-                            setImageCredits(savedImages);
-                            setAccessState('granted');
-                        } else if (savedToken === tokenFromUrl && savedCarousels <= 0) {
-                            // Same token, already used all credits
-                            setCarouselCredits(0);
-                            setImageCredits(savedImages);
-                            setAccessState('expired');
-                        } else {
-                            // New token, fresh credits
+                        if (data.isOwner) {
                             localStorage.setItem(LS_TOKEN_KEY, tokenFromUrl);
-                            localStorage.setItem(LS_CAROUSELS_KEY, String(MAX_CAROUSEL_CREDITS));
-                            localStorage.setItem(LS_IMAGES_KEY, String(MAX_IMAGE_CREDITS));
-                            setCarouselCredits(MAX_CAROUSEL_CREDITS);
-                            setImageCredits(MAX_IMAGE_CREDITS);
+                            localStorage.setItem(LS_CAROUSELS_KEY, '-1');
+                            localStorage.setItem(LS_IMAGES_KEY, '-1');
+                            setCarouselCredits(-1);
+                            setImageCredits(-1);
                             setAccessState('granted');
+                        } else {
+                            // Check if this token already has saved credits
+                            const savedToken = localStorage.getItem(LS_TOKEN_KEY);
+                            const savedCarousels = parseInt(localStorage.getItem(LS_CAROUSELS_KEY) || '0', 10);
+                            const savedImages = parseInt(localStorage.getItem(LS_IMAGES_KEY) || '0', 10);
+
+                            if (savedToken === tokenFromUrl && savedCarousels > 0) {
+                                // Same token, resume credits
+                                setCarouselCredits(savedCarousels);
+                                setImageCredits(savedImages);
+                                setAccessState('granted');
+                            } else if (savedToken === tokenFromUrl && savedCarousels <= 0) {
+                                // Same token, already used all credits
+                                setCarouselCredits(0);
+                                setImageCredits(savedImages);
+                                setAccessState('expired');
+                            } else {
+                                // New token, fresh credits
+                                localStorage.setItem(LS_TOKEN_KEY, tokenFromUrl);
+                                localStorage.setItem(LS_CAROUSELS_KEY, String(MAX_CAROUSEL_CREDITS));
+                                localStorage.setItem(LS_IMAGES_KEY, String(MAX_IMAGE_CREDITS));
+                                setCarouselCredits(MAX_CAROUSEL_CREDITS);
+                                setImageCredits(MAX_IMAGE_CREDITS);
+                                setAccessState('granted');
+                            }
                         }
                     } else {
                         setAccessState('blocked');
@@ -72,7 +81,12 @@ export default function AccessGate({ children }) {
             if (savedToken) {
                 const savedCarousels = parseInt(localStorage.getItem(LS_CAROUSELS_KEY) || '0', 10);
                 const savedImages = parseInt(localStorage.getItem(LS_IMAGES_KEY) || '0', 10);
-                if (savedCarousels > 0) {
+                
+                if (savedCarousels === -1) {
+                    setCarouselCredits(-1);
+                    setImageCredits(-1);
+                    setAccessState('granted');
+                } else if (savedCarousels > 0) {
                     setCarouselCredits(savedCarousels);
                     setImageCredits(savedImages);
                     setAccessState('granted');
@@ -84,10 +98,8 @@ export default function AccessGate({ children }) {
                 return;
             }
 
-            // 3. No token anywhere — this is the owner accessing normally
-            setAccessState('granted');
-            setCarouselCredits(-1); // -1 = unlimited (owner mode)
-            setImageCredits(-1);
+            // 3. No token anywhere — block access by default!
+            setAccessState('blocked');
         };
 
         init();

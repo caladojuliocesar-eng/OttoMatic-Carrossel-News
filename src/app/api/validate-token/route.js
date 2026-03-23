@@ -8,10 +8,16 @@ export async function POST(req) {
             return NextResponse.json({ valid: false }, { status: 400 });
         }
 
+        const ownerToken = process.env.OWNER_TOKEN;
+
+        if (ownerToken && token === ownerToken) {
+            return NextResponse.json({ valid: true, isOwner: true });
+        }
+
         const validTokens = (process.env.VIP_TOKENS || '').split(',').map(t => t.trim()).filter(Boolean);
 
         if (validTokens.includes(token)) {
-            return NextResponse.json({ valid: true });
+            return NextResponse.json({ valid: true, isOwner: false });
         }
 
         return NextResponse.json({ valid: false });
