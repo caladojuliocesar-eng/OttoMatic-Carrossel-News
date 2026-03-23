@@ -8,9 +8,9 @@ export async function POST(req) {
             return NextResponse.json({ valid: false }, { status: 400 });
         }
 
-        const ownerToken = process.env.OWNER_TOKEN;
+        const ownerToken = (process.env.OWNER_TOKEN || '').trim();
 
-        if (ownerToken && token === ownerToken) {
+        if (ownerToken && token.trim() === ownerToken) {
             return NextResponse.json({ valid: true, isOwner: true });
         }
 
