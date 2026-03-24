@@ -273,7 +273,7 @@ export default function CarouselEngine({
         setImagePositions({}); 
 
         try {
-            const requestSlideCount = !isOwner ? 4 : slideCount;
+            const requestSlideCount = !isOwner ? 6 : slideCount;
             const response = await fetch('/api/generate-carousel', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -614,20 +614,20 @@ export default function CarouselEngine({
                                 <div className="flex justify-between items-center mb-2">
                                     <label className="text-sm font-medium text-zinc-300">Quantidade de Slides</label>
                                     <span className={`font-bold px-2 py-0.5 rounded text-sm ${(!isOwner || isUrlDetected) ? 'bg-indigo-500/20 text-indigo-400' : 'bg-blue-500/10 text-blue-500'}`}>
-                                        {!isOwner ? '4 (Versão Teste)' : isUrlDetected ? 'Automático pela IA' : slideCount}
+                                        {!isOwner ? '6 (Versão Teste)' : isUrlDetected ? 'Automático pela IA' : slideCount}
                                     </span>
                                 </div>
                                 <input 
                                     type="range" 
                                     min="4" 
                                     max="10" 
-                                    value={!isOwner ? 4 : slideCount}
+                                    value={!isOwner ? 6 : slideCount}
                                     onChange={(e) => setSlideCount(parseInt(e.target.value))}
                                     disabled={!isOwner || isUrlDetected}
                                     className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${(!isOwner || isUrlDetected) ? 'bg-indigo-900/50 accent-indigo-500 opacity-50' : 'bg-zinc-800 accent-blue-500'}`}
                                 />
                                 <div className="flex justify-between text-xs text-zinc-500 mt-2">
-                                    <span>4 (Curto)</span>
+                                    <span>{(!isOwner || isUrlDetected) ? '6 (Restrito)' : '4 (Curto)'}</span>
                                     <span>{(!isOwner || isUrlDetected) ? 'O Slider será bloqueado' : '10 (Bíblia)'}</span>
                                 </div>
                             </div>

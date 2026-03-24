@@ -29,7 +29,7 @@ function doPost(e) {
     var token = "vip-" + primeiroNome + "-" + timestamp.slice(-4);
     
     // URL Final do site (ajuste se mudar o domínio)
-    var baseURL = "https://ottomatic-carousel.vercel.app/"; 
+    var baseURL = "https://carrossel-news.ottomatic.com.br/"; 
     var linkURL = baseURL + "?token=" + token;
     
     // Adicionar linha: [Data, Nome, Email, WhatsApp, Token, Link]
