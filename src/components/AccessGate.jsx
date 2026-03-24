@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ShieldAlert, MessageCircle, Zap, Sparkles } from 'lucide-react';
 
 const MAX_CAROUSEL_CREDITS = 2;
-const MAX_IMAGE_CREDITS = 25;
+const MAX_IMAGE_CREDITS = 10;
 const LS_TOKEN_KEY = 'vip_token';
 const LS_CAROUSELS_KEY = 'vip_carousels_v2';
 const LS_IMAGES_KEY = 'vip_images_v2';
